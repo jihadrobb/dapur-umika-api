@@ -7,7 +7,7 @@ async function bootstrap() {
   app.use(bodyParser.json({ limit: '50mb' }));
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
   app.enableCors();
-  await app.listen(process.env.HOST);
-  console.log(`##### App running on port ${process.env.HOST} #####`);
+  await app.listen(process.env.PORT);
+  console.log(`##### App running on port ${process.env.PORT} #####`);
 }
 bootstrap();
