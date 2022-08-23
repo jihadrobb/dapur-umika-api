@@ -37,7 +37,7 @@ export class PricelistService {
   }
 
   async findAll() {
-    return this.pricelistModel.findAll();
+    return await this.pricelistModel.findAll();
   }
 
   async findOne(id: string) {
@@ -80,6 +80,5 @@ export class PricelistService {
     const pricelist = await this.pricelistModel.findByPk(id);
     if (!pricelist) throw new NotFoundException('Pricelist not found');
     await this.pricelistModel.destroy({ where: { id } });
-    return 'Pricelist deleted';
   }
 }

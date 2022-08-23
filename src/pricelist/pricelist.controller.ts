@@ -8,11 +8,14 @@ import {
   Delete,
   UseInterceptors,
   UploadedFile,
+  Res,
+  HttpStatus,
 } from '@nestjs/common';
 import { PricelistService } from './pricelist.service';
 import { CreatePricelistDto } from './dto/create-pricelist.dto';
 import { UpdatePricelistDto } from './dto/update-pricelist.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Response } from 'express';
 
 @Controller('pricelist')
 export class PricelistController {
@@ -23,32 +26,66 @@ export class PricelistController {
   async create(
     @Body() createPricelistDto: CreatePricelistDto,
     @UploadedFile() image: Express.Multer.File,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    return await this.pricelistService.create(createPricelistDto, image);
+    const payload = await this.pricelistService.create(
+      createPricelistDto,
+      image,
+    );
+    return res.status(HttpStatus.CREATED).json({
+      isSuccessful: true,
+      message: 'Pricelist created',
+      payload,
+    });
   }
 
   @Get()
-  findAll() {
-    return this.pricelistService.findAll();
+  async findAll(@Res({ passthrough: true }) res: Response) {
+    const payload = await this.pricelistService.findAll();
+    return res.status(HttpStatus.OK).json({
+      isSuccessful: true,
+      payload,
+    });
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.pricelistService.findOne(id);
+  async findOne(
+    @Param('id') id: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const payload = await this.pricelistService.findOne(id);
+    return res.status(HttpStatus.OK).json({
+      isSuccessful: true,
+      payload,
+    });
   }
 
   @Patch(':id')
   @UseInterceptors(FileInterceptor('image'))
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updatePricelistDto: UpdatePricelistDto,
     @UploadedFile() image: Express.Multer.File,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    return this.pricelistService.update(id, updatePricelistDto, image);
+    const payload = await this.pricelistService.update(
+      id,
+      updatePricelistDto,
+      image,
+    );
+    return res
+      .status(HttpStatus.OK)
+      .json({ isSuccessful: true, message: 'Data updated', payload });
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.pricelistService.remove(id);
+  async remove(
+    @Param('id') id: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    await this.pricelistService.remove(id);
+    return res
+      .status(HttpStatus.OK)
+      .json({ isSuccessful: true, message: 'Data deleted' });
   }
 }
