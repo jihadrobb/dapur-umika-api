@@ -18,11 +18,8 @@ export class PricelistService {
     private cloudinary: CloudinaryService,
   ) {}
 
-  async create(
-    createPricelistDto: CreatePricelistDto,
-    image: Express.Multer.File,
-  ) {
-    const { name } = createPricelistDto;
+  async create(body: CreatePricelistDto, image: Express.Multer.File) {
+    const { name } = body;
     const cloudinaryResponse = await this.cloudinary
       .uploadImage(image, 'Pricelist')
       .catch(() => {
@@ -48,10 +45,10 @@ export class PricelistService {
 
   async update(
     id: string,
-    updatePricelistDto: UpdatePricelistDto,
+    body: UpdatePricelistDto,
     image: Express.Multer.File,
   ) {
-    const { name, isActive } = updatePricelistDto;
+    const { name, isActive } = body;
     const pricelist = await this.pricelistModel.findByPk(id);
     if (!pricelist) throw new NotFoundException('Pricelist not found');
     let imgUrl = pricelist.getDataValue('imgUrl');
