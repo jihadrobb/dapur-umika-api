@@ -17,7 +17,7 @@ import { UpdatePricelistDto } from './dto/update-pricelist.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 
-@Controller('pricelist')
+@Controller('pricelists')
 export class PricelistController {
   constructor(private readonly pricelistService: PricelistService) {}
 
