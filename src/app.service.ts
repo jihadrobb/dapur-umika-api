@@ -5,7 +5,7 @@ import { Sequelize } from 'sequelize-typescript';
 export class AppService {
   constructor(private sequelize: Sequelize) {}
 
-  getHello(): string {
-    return 'Hello World!';
+  getHello(): any {
+    return { message: 'Dapur umika api is running!' };
   }
 }
