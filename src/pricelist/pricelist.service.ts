@@ -25,11 +25,18 @@ export class PricelistService {
       .catch(() => {
         throw new BadRequestException('Invalid file type.');
       });
-    return await this.pricelistModel.create({
-      id: uuidv4(),
+    const generateId = uuidv4();
+    const pricelist = await this.pricelistModel.create({
+      id: generateId,
       name,
       imgUrl: cloudinaryResponse.secure_url,
       isActive: true,
+      cdnPublicId: cloudinaryResponse.public_id,
+    });
+    return this.pricelistModel.findByPk(generateId, {
+      attributes: {
+        exclude: ['cdnPublicId'],
+      },
     });
   }
 
@@ -76,6 +83,7 @@ export class PricelistService {
   async remove(id: string) {
     const pricelist = await this.pricelistModel.findByPk(id);
     if (!pricelist) throw new NotFoundException('Pricelist not found');
+    await this.cloudinary.deleteImage(pricelist.cdnPublicId);
     await this.pricelistModel.destroy({ where: { id } });
   }
 }
