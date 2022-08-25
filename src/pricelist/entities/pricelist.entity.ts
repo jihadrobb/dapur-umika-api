@@ -14,6 +14,9 @@ class Pricelist extends Model {
 
   @Column({ defaultValue: true })
   isActive: boolean;
+
+  @Column
+  cdnPublicId: string; // cloudinary public id for deleting image
 }
 
 export { Pricelist };
