@@ -11,15 +11,10 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     ConfigModule.forRoot(),
     SequelizeModule.forRoot({
       dialect: 'postgres',
-      uri: process.env.DATABASE_URL,
+      uri: process.env.DATABASE_URL2,
       autoLoadModels: true,
       synchronize: true,
       models: [Pricelist],
-      dialectOptions: {
-        ssl: {
-          rejectUnauthorized: false,
-        },
-      },
     }),
     PricelistModule,
     CloudinaryModule,
