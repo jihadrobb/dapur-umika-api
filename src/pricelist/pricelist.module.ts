@@ -3,10 +3,11 @@ import { PricelistService } from './pricelist.service';
 import { PricelistController } from './pricelist.controller';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { Pricelist } from './entities/pricelist.entity';
-import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
+import { ImageModule } from 'src/image/image.module';
+import { Image } from 'src/image/entities/image.entity';
 
 @Module({
-  imports: [SequelizeModule.forFeature([Pricelist]), CloudinaryModule],
+  imports: [SequelizeModule.forFeature([Pricelist]), ImageModule],
   controllers: [PricelistController],
   providers: [PricelistService],
 })

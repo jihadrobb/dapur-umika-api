@@ -1,5 +1,5 @@
-import { Column, Model, Table } from 'sequelize-typescript';
-import { v4 as uuidv4 } from 'uuid';
+import { Column, HasOne, Model, Table } from 'sequelize-typescript';
+import { Image } from 'src/image/entities/image.entity';
 
 @Table
 class Pricelist extends Model {
@@ -9,14 +9,11 @@ class Pricelist extends Model {
   @Column
   name: string;
 
-  @Column
-  imgUrl: string;
-
   @Column({ defaultValue: true })
   isActive: boolean;
 
-  @Column
-  cdnPublicId: string; // cloudinary public id for deleting image
+  @HasOne(() => Image)
+  image: Image;
 }
 
 export { Pricelist };
