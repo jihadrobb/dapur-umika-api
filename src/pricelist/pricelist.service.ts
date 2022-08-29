@@ -62,7 +62,6 @@ export class PricelistService {
     body: UpdatePricelistDto,
     file: Express.Multer.File,
   ) {
-    const { name, isActive } = body;
     const pricelist = await this.pricelistModel.findByPk(id, {
       include: {
         model: Image,
@@ -76,13 +75,7 @@ export class PricelistService {
       await this.imageService.update(image.id, file);
     }
 
-    await this.pricelistModel.update(
-      {
-        name: name || pricelist.name,
-        isActive: isActive || pricelist.isActive,
-      },
-      { where: { id }, returning: true },
-    );
+    await this.pricelistModel.update(body, { where: { id }, returning: true });
     return this.pricelistModel.findByPk(id, {
       include: {
         model: Image,
