@@ -8,7 +8,6 @@ import { CreatePricelistDto } from './dto/create-pricelist.dto';
 import { UpdatePricelistDto } from './dto/update-pricelist.dto';
 import { Pricelist } from './entities/pricelist.entity';
 import { v4 as uuidv4 } from 'uuid';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { ImageService } from 'src/image/image.service';
 import { Image } from 'src/image/entities/image.entity';
 
@@ -23,15 +22,11 @@ export class PricelistService {
   async create(body: CreatePricelistDto, file: Express.Multer.File) {
     const { name } = body;
     const generatedId = uuidv4();
-    const pricelist = await this.pricelistModel.create({
+    await this.pricelistModel.create({
       id: generatedId,
       name,
     });
-    const image = await this.imageService.create(
-      file,
-      'Pricelist',
-      generatedId,
-    );
+    await this.imageService.create(file, 'Pricelist', generatedId);
 
     return this.pricelistModel.findByPk(generatedId, {
       include: {
@@ -42,7 +37,7 @@ export class PricelistService {
   }
 
   async findAll() {
-    return await this.pricelistModel.findAll({
+    return this.pricelistModel.findAll({
       where: { isActive: true },
       include: {
         model: Image,
