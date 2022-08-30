@@ -70,6 +70,17 @@ export class ProductController {
       .json({ isSuccessful: true, message: 'Data updated', payload });
   }
 
+  @Delete(':id')
+  async remove(
+    @Param('id') id: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    await this.productService.remove(id);
+    return res
+      .status(HttpStatus.OK)
+      .json({ isSuccessful: true, message: 'Data deleted' });
+  }
+
   @Post('image/:productId')
   @UseInterceptors(FilesInterceptor('images[]', 10))
   async addImage(
@@ -92,16 +103,5 @@ export class ProductController {
     return res
       .status(HttpStatus.OK)
       .json({ isSuccessful: true, message: 'Image deleted' });
-  }
-
-  @Delete(':id')
-  async remove(
-    @Param('id') id: string,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    await this.productService.remove(id);
-    return res
-      .status(HttpStatus.OK)
-      .json({ isSuccessful: true, message: 'Data deleted' });
   }
 }

@@ -81,6 +81,14 @@ export class ProductService {
   }
 
   async remove(id: string) {
-    return `This action removes a #${id} product`;
+    const product = await this.productModel.findByPk(id, {
+      include: { model: Image },
+    });
+    if (!product) throw new NotFoundException('Product not found');
+
+    await Promise.all(
+      product.images.map((img) => this.imageService.remove(img.id)),
+    );
+    return this.productModel.destroy({ where: { id } });
   }
 }
