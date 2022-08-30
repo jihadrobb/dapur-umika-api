@@ -70,7 +70,7 @@ export class ProductController {
       .json({ isSuccessful: true, message: 'Data updated', payload });
   }
 
-  @Post('addImage/:productId')
+  @Post('image/:productId')
   @UseInterceptors(FilesInterceptor('images[]', 10))
   async addImage(
     @Param('productId') productId: string,
@@ -83,7 +83,7 @@ export class ProductController {
       .json({ isSuccessful: true, message: 'Image uploaded' });
   }
 
-  @Delete('removeImage/:imageId')
+  @Delete('image/:imageId')
   async removeImage(
     @Param('imageId') imageId: string,
     @Res({ passthrough: true }) res: Response,
