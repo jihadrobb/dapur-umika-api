@@ -71,7 +71,6 @@ export class PricelistService {
 
     if (file) {
       const { image } = pricelist;
-      console.log('image', image);
       await this.imageService.update(image.id, file);
     }
 
