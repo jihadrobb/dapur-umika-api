@@ -1,26 +1,94 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { ImageService } from 'src/image/image.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { Order } from './entities/order.entity';
+import { v4 as uuidv4 } from 'uuid';
+import { Product } from 'src/product/entities/product.entity';
+import { Image } from 'src/image/entities/image.entity';
+import { ProductService } from 'src/product/product.service';
 
 @Injectable()
 export class OrderService {
-  create(createOrderDto: CreateOrderDto) {
-    return 'This action adds a new order';
+  constructor(
+    @InjectModel(Order)
+    private orderModel: typeof Order,
+    private imageService: ImageService,
+    private productService: ProductService,
+  ) {}
+
+  async create(userId: string, body: CreateOrderDto) {
+    const { productId, amount } = body;
+
+    const product = await this.productService.findOne(productId);
+    if (!product) throw new NotFoundException('Product not found');
+
+    const generatedId = uuidv4();
+    await this.orderModel.create({
+      id: generatedId,
+      amount,
+      price: amount * product.getDataValue('price'),
+      userId,
+      productId,
+    });
+    return this.getDetailOrder(generatedId);
   }
 
-  findAll() {
-    return `This action returns all order`;
+  async findAll(options?: any) {
+    return this.orderModel.findAll({
+      where: { ...options },
+      include: [
+        {
+          model: Product,
+          attributes: { exclude: ['isActive', 'createdAt', 'updatedAt'] },
+          include: [{ model: Image, attributes: ['id', 'imgUrl'] }],
+        },
+        {
+          model: Image,
+          attributes: ['id', 'imgUrl'],
+        },
+      ],
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} order`;
+  async update(id: string, body: UpdateOrderDto, image?: Express.Multer.File) {
+    const order = await this.getDetailOrder(id);
+    if (!order) throw new NotFoundException('Order not found');
+
+    if (image) {
+      const { transferReceipt } = order;
+      transferReceipt
+        ? await this.imageService.update(transferReceipt.id, image)
+        : await this.imageService.create(image, 'Receipt', id);
+    }
+
+    await this.orderModel.update(body, { where: { id } });
+    return this.getDetailOrder(id);
   }
 
-  update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
+  async remove(id: string) {
+    const order = await this.getDetailOrder(id);
+    if (!order) throw new NotFoundException('Order not found');
+
+    order.transferReceipt &&
+      (await this.imageService.remove(order.transferReceipt.id));
+    return this.orderModel.destroy({ where: { id } });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} order`;
+  async getDetailOrder(id: string) {
+    return this.orderModel.findByPk(id, {
+      include: [
+        {
+          model: Product,
+          attributes: { exclude: ['isActive', 'createdAt', 'updatedAt'] },
+          include: [{ model: Image, attributes: ['id', 'imgUrl'] }],
+        },
+        {
+          model: Image,
+          attributes: ['id', 'imgUrl'],
+        },
+      ],
+    });
   }
 }

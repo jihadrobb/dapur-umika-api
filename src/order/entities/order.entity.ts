@@ -15,6 +15,12 @@ class Order extends Model {
   @Column({ primaryKey: true })
   id: string;
 
+  @Column({ defaultValue: 1 })
+  amount: number;
+
+  @Column
+  price: number;
+
   @Column
   pickupType: string;
 
@@ -24,10 +30,10 @@ class Order extends Model {
   @Column
   paymentMethod: string;
 
-  @Column
-  status: string;
+  @Column({ defaultValue: 'unpaid' })
+  status: 'unpaid' | 'paid' | 'sent' | 'completed';
 
-  @Column
+  @Column({ defaultValue: false })
   isCheckedOut: boolean;
 
   @ForeignKey(() => User)
