@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -25,9 +26,15 @@ export class UserService {
   ) {}
   async create(body: RegisterDto) {
     const { name, email, phone, password } = body;
+
+    const checkEmail = await this.userModel.findOne({ where: { email } });
+    if (checkEmail) throw new ConflictException('Email is registered');
+
+    const checkPhone = await this.userModel.findOne({ where: { phone } });
+    if (checkPhone) throw new ConflictException('Phone number is registered');
+
     const generatedId = uuidv4();
     const hashedPassword = await hash(password, 10);
-
     await this.userModel.create({
       id: generatedId,
       name,
