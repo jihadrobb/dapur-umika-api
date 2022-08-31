@@ -11,18 +11,25 @@ import {
   UploadedFile,
   HttpStatus,
   UploadedFiles,
+  UseGuards,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
+import { Roles } from 'src/role/roles.decorator';
+import { Role } from 'src/role/role.enum';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { RolesGuard } from 'src/role/roles.guard';
 
 @Controller('products')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   @UseInterceptors(FilesInterceptor('images[]', 10))
   async create(
     @Body() body: CreateProductDto,
@@ -59,6 +66,8 @@ export class ProductController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   async update(
     @Param('id') id: string,
     @Body() body: UpdateProductDto,
@@ -71,6 +80,8 @@ export class ProductController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   async remove(
     @Param('id') id: string,
     @Res({ passthrough: true }) res: Response,
@@ -82,6 +93,8 @@ export class ProductController {
   }
 
   @Post('image/:productId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   @UseInterceptors(FilesInterceptor('images[]', 10))
   async addImage(
     @Param('productId') productId: string,
@@ -95,6 +108,8 @@ export class ProductController {
   }
 
   @Delete('image/:imageId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   async removeImage(
     @Param('imageId') imageId: string,
     @Res({ passthrough: true }) res: Response,
