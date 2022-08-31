@@ -1,6 +1,8 @@
 import { MinLength } from 'class-validator';
-
-export class CreatePricelistDto {
+export class AddAddressDto {
   @MinLength(5)
   name: string;
+
+  @MinLength(8)
+  detail: string;
 }

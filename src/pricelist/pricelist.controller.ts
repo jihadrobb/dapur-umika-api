@@ -10,18 +10,25 @@ import {
   UploadedFile,
   Res,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { PricelistService } from './pricelist.service';
 import { CreatePricelistDto } from './dto/create-pricelist.dto';
 import { UpdatePricelistDto } from './dto/update-pricelist.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { RolesGuard } from 'src/role/roles.guard';
+import { Roles } from 'src/role/roles.decorator';
+import { Role } from 'src/role/role.enum';
 
 @Controller('pricelists')
 export class PricelistController {
   constructor(private readonly pricelistService: PricelistService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   @UseInterceptors(FileInterceptor('image'))
   async create(
     @Body() createPricelistDto: CreatePricelistDto,
@@ -61,6 +68,8 @@ export class PricelistController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   @UseInterceptors(FileInterceptor('image'))
   async update(
     @Param('id') id: string,
@@ -79,6 +88,8 @@ export class PricelistController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   async remove(
     @Param('id') id: string,
     @Res({ passthrough: true }) res: Response,

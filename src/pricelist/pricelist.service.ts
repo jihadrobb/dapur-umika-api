@@ -1,5 +1,5 @@
 import {
-  BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -8,44 +8,55 @@ import { CreatePricelistDto } from './dto/create-pricelist.dto';
 import { UpdatePricelistDto } from './dto/update-pricelist.dto';
 import { Pricelist } from './entities/pricelist.entity';
 import { v4 as uuidv4 } from 'uuid';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { ImageService } from 'src/image/image.service';
+import { Image } from 'src/image/entities/image.entity';
 
 @Injectable()
 export class PricelistService {
   constructor(
     @InjectModel(Pricelist)
     private pricelistModel: typeof Pricelist,
-    private cloudinary: CloudinaryService,
+    private imageService: ImageService,
   ) {}
 
-  async create(body: CreatePricelistDto, image: Express.Multer.File) {
+  async create(body: CreatePricelistDto, file: Express.Multer.File) {
     const { name } = body;
-    const cloudinaryResponse = await this.cloudinary
-      .uploadImage(image, 'Pricelist')
-      .catch(() => {
-        throw new BadRequestException('Invalid file type.');
-      });
-    const generateId = uuidv4();
-    const pricelist = await this.pricelistModel.create({
-      id: generateId,
+
+    const pricelist = await this.pricelistModel.findOne({ where: { name } });
+    if (pricelist) throw new ConflictException('Pricelist already exists');
+
+    const generatedId = uuidv4();
+    await this.pricelistModel.create({
+      id: generatedId,
       name,
-      imgUrl: cloudinaryResponse.secure_url,
-      isActive: true,
-      cdnPublicId: cloudinaryResponse.public_id,
     });
-    return this.pricelistModel.findByPk(generateId, {
-      attributes: {
-        exclude: ['cdnPublicId'],
+    await this.imageService.create(file, 'Pricelist', generatedId);
+
+    return this.pricelistModel.findByPk(generatedId, {
+      include: {
+        model: Image,
+        attributes: ['id', 'imgUrl'],
       },
     });
   }
 
   async findAll() {
-    return await this.pricelistModel.findAll();
+    return this.pricelistModel.findAll({
+      where: { isActive: true },
+      include: {
+        model: Image,
+        attributes: ['id', 'imgUrl'],
+      },
+    });
   }
 
   async findOne(id: string) {
-    const pricelist = await this.pricelistModel.findByPk(id);
+    const pricelist = await this.pricelistModel.findByPk(id, {
+      include: {
+        model: Image,
+        attributes: ['id', 'imgUrl'],
+      },
+    });
     if (!pricelist) throw new NotFoundException('Pricelist not found');
     return pricelist;
   }
@@ -53,37 +64,42 @@ export class PricelistService {
   async update(
     id: string,
     body: UpdatePricelistDto,
-    image: Express.Multer.File,
+    file: Express.Multer.File,
   ) {
-    const { name, isActive } = body;
-    const pricelist = await this.pricelistModel.findByPk(id);
-    if (!pricelist) throw new NotFoundException('Pricelist not found');
-    let imgUrl = pricelist.getDataValue('imgUrl');
+    let pricelist = await this.pricelistModel.findOne({
+      where: { name: body.name },
+    });
+    if (pricelist.id !== id)
+      throw new ConflictException('Pricelist with this name already exists');
 
-    if (image) {
-      const cloudinaryResponse = await this.cloudinary
-        .uploadImage(image, 'Pricelist')
-        .catch(() => {
-          throw new BadRequestException('Invalid file type.');
-        });
-      imgUrl = cloudinaryResponse.secure_url;
+    pricelist = await this.pricelistModel.findByPk(id, {
+      include: {
+        model: Image,
+      },
+    });
+    if (!pricelist) throw new NotFoundException('Pricelist not found');
+
+    if (file) {
+      const { image } = pricelist;
+      await this.imageService.update(image.id, file);
     }
 
-    const newPricelist = await this.pricelistModel.update(
-      {
-        name: name || pricelist.name,
-        isActive: isActive || pricelist.isActive,
-        imgUrl,
+    await this.pricelistModel.update(body, { where: { id }, returning: true });
+    return this.pricelistModel.findByPk(id, {
+      include: {
+        model: Image,
+        attributes: ['id', 'imgUrl'],
       },
-      { where: { id }, returning: true },
-    );
-    return newPricelist[1][0];
+    });
   }
 
   async remove(id: string) {
-    const pricelist = await this.pricelistModel.findByPk(id);
+    const pricelist = await this.pricelistModel.findByPk(id, {
+      include: { model: Image },
+    });
     if (!pricelist) throw new NotFoundException('Pricelist not found');
-    await this.cloudinary.deleteImage(pricelist.cdnPublicId);
+
+    await this.imageService.remove(pricelist.image.id);
     await this.pricelistModel.destroy({ where: { id } });
   }
 }
