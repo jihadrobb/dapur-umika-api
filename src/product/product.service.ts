@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Image } from 'src/image/entities/image.entity';
 import { ImageService } from 'src/image/image.service';
@@ -16,8 +20,12 @@ export class ProductService {
   ) {}
 
   async create(body: CreateProductDto, images: Express.Multer.File[]) {
-    const generatedId = uuidv4();
+    const product = await this.productModel.findOne({
+      where: { name: body.name },
+    });
+    if (product) throw new ConflictException('Product already exists');
 
+    const generatedId = uuidv4();
     await this.productModel.create({
       id: generatedId,
       ...body,
@@ -56,7 +64,13 @@ export class ProductService {
   }
 
   async update(id: string, body: UpdateProductDto) {
-    const product = await this.productModel.findByPk(id);
+    let product = await this.productModel.findOne({
+      where: { name: body.name },
+    });
+    if (product)
+      throw new ConflictException('Product with this name already exists');
+
+    product = await this.productModel.findByPk(id);
     if (!product) throw new NotFoundException('Product not found');
 
     await this.productModel.update(body, { where: { id } });

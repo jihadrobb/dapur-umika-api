@@ -24,6 +24,17 @@ export class OrderService {
     const product = await this.productService.findOne(productId);
     if (!product) throw new NotFoundException('Product not found');
 
+    const order = await this.orderModel.findOne({
+      where: { userId, productId },
+    });
+
+    if (order) {
+      const newAmount: number = order.amount + amount;
+      return this.update(order.id, {
+        amount: newAmount,
+      });
+    }
+
     const generatedId = uuidv4();
     await this.orderModel.create({
       id: generatedId,
@@ -63,7 +74,10 @@ export class OrderService {
         : await this.imageService.create(image, 'Receipt', id);
     }
 
-    await this.orderModel.update(body, { where: { id } });
+    const amount = body.amount || order.getDataValue('amount');
+    const price = order.getDataValue('product').price * amount;
+
+    await this.orderModel.update({ ...body, amount, price }, { where: { id } });
     return this.getDetailOrder(id);
   }
 

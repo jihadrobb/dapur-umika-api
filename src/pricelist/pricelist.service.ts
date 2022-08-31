@@ -1,5 +1,5 @@
 import {
-  BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -21,6 +21,10 @@ export class PricelistService {
 
   async create(body: CreatePricelistDto, file: Express.Multer.File) {
     const { name } = body;
+
+    const pricelist = await this.pricelistModel.findOne({ where: { name } });
+    if (pricelist) throw new ConflictException('Pricelist already exists');
+
     const generatedId = uuidv4();
     await this.pricelistModel.create({
       id: generatedId,
@@ -62,7 +66,13 @@ export class PricelistService {
     body: UpdatePricelistDto,
     file: Express.Multer.File,
   ) {
-    const pricelist = await this.pricelistModel.findByPk(id, {
+    let pricelist = await this.pricelistModel.findOne({
+      where: { name: body.name },
+    });
+    if (pricelist.id !== id)
+      throw new ConflictException('Pricelist with this name already exists');
+
+    pricelist = await this.pricelistModel.findByPk(id, {
       include: {
         model: Image,
       },
