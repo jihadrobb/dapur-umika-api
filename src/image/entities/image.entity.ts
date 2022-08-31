@@ -1,11 +1,11 @@
 import {
   BelongsTo,
-  BelongsToMany,
   Column,
   ForeignKey,
   Model,
   Table,
 } from 'sequelize-typescript';
+import { Order } from 'src/order/entities/order.entity';
 import { Pricelist } from 'src/pricelist/entities/pricelist.entity';
 import { Product } from 'src/product/entities/product.entity';
 
@@ -28,11 +28,18 @@ class Image extends Model {
   @Column
   productId: string;
 
+  @ForeignKey(() => Order)
+  @Column
+  transferReceiptId: string;
+
   @BelongsTo(() => Pricelist)
   pricelist: Pricelist;
 
   @BelongsTo(() => Product)
   product: Product;
+
+  @BelongsTo(() => Order)
+  order: Order;
 }
 
 export { Image };

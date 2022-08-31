@@ -1,5 +1,6 @@
 import { Column, HasMany, Model, Table } from 'sequelize-typescript';
 import { Image } from 'src/image/entities/image.entity';
+import { Order } from 'src/order/entities/order.entity';
 
 @Table
 class Product extends Model {
@@ -29,6 +30,9 @@ class Product extends Model {
 
   @HasMany(() => Image)
   images: Image[];
+
+  @HasMany(() => Order)
+  orders: Order[];
 }
 
 export { Product };

@@ -18,7 +18,7 @@ export class ImageService {
 
   async create(
     file: Express.Multer.File,
-    type: 'Pricelist' | 'Product',
+    type: 'Pricelist' | 'Product' | 'Receipt',
     foreignId: string,
   ) {
     const cloudinaryResponse = await this.cloudinary
@@ -27,17 +27,48 @@ export class ImageService {
         throw new BadRequestException('Invalid file type.');
       });
     const generatedId = uuidv4();
+    let pricelistId = null,
+      productId = null,
+      transferReceiptId = null;
+    switch (type) {
+      case 'Pricelist':
+        pricelistId = foreignId;
+        break;
+      case 'Product':
+        productId = foreignId;
+        break;
+      case 'Receipt':
+        transferReceiptId = foreignId;
+        break;
+    }
     return this.imageModel.create({
       id: generatedId,
       imgUrl: cloudinaryResponse.secure_url,
       cdnPublicId: cloudinaryResponse.public_id,
-      pricelistId: type === 'Pricelist' ? foreignId : null,
-      productId: type === 'Product' ? foreignId : null,
+      pricelistId,
+      productId,
+      transferReceiptId,
     });
   }
 
-  async findAll(foreignId: string) {
-    return this.imageModel.findAll({ where: { foreignId } });
+  async findAllByType(type: string, foreignId: string) {
+    let pricelistId = null,
+      productId = null,
+      transferReceiptId = null;
+    switch (type) {
+      case 'Pricelist':
+        pricelistId = foreignId;
+        break;
+      case 'Product':
+        productId = foreignId;
+        break;
+      case 'Receipt':
+        transferReceiptId = foreignId;
+        break;
+    }
+    return this.imageModel.findAll({
+      where: { pricelistId, productId, transferReceiptId },
+    });
   }
 
   async findOne(id: string) {
@@ -48,7 +79,11 @@ export class ImageService {
     const image = await this.imageModel.findByPk(id);
     if (!image) throw new NotFoundException('Image not found');
 
-    const type = image.pricelistId ? 'Pricelist' : 'Product';
+    const type = image.pricelistId
+      ? 'Pricelist'
+      : image.productId
+      ? 'Product'
+      : 'Receipt';
     const cloudinaryResponse = await this.cloudinary
       .uploadImage(file, type)
       .catch(() => {

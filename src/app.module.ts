@@ -15,6 +15,8 @@ import { AddressModule } from './address/address.module';
 import { Address } from './address/entities/address.entity';
 import { User } from './user/entities/user.entity';
 import { AuthModule } from './auth/auth.module';
+import { OrderModule } from './order/order.module';
+import { Order } from './order/entities/order.entity';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -24,12 +26,13 @@ import { AuthModule } from './auth/auth.module';
       uri: process.env.DATABASE_URL_LOCAL,
       autoLoadModels: true,
       synchronize: true,
-      models: [Address, Image, Pricelist, Product, User],
+      models: [Address, Image, Order, Pricelist, Product, User],
     }),
     AddressModule,
     AuthModule,
     CloudinaryModule,
     ImageModule,
+    OrderModule,
     PricelistModule,
     ProductModule,
     UserModule,
