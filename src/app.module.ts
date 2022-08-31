@@ -10,6 +10,11 @@ import { ImageModule } from './image/image.module';
 import { Pricelist } from './pricelist/entities/pricelist.entity';
 import { Product } from './product/entities/product.entity';
 import { Image } from './image/entities/image.entity';
+import { UserModule } from './user/user.module';
+import { AddressModule } from './address/address.module';
+import { Address } from './address/entities/address.entity';
+import { User } from './user/entities/user.entity';
+import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -19,12 +24,15 @@ import { Image } from './image/entities/image.entity';
       uri: process.env.DATABASE_URL_LOCAL,
       autoLoadModels: true,
       synchronize: true,
-      models: [Pricelist, Image, Product],
+      models: [Address, Image, Pricelist, Product, User],
     }),
-    PricelistModule,
+    AddressModule,
+    AuthModule,
     CloudinaryModule,
-    ProductModule,
     ImageModule,
+    PricelistModule,
+    ProductModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
