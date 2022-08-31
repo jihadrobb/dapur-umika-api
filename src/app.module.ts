@@ -22,8 +22,8 @@ import { Order } from './order/entities/order.entity';
     ConfigModule.forRoot(),
     SequelizeModule.forRoot({
       dialect: 'postgres',
-      // uri: process.env.DATABASE_URL2,
-      uri: process.env.DATABASE_URL_LOCAL,
+      uri: process.env.DATABASE_URL_FLY,
+      // uri: process.env.DATABASE_URL_LOCAL,
       autoLoadModels: true,
       synchronize: true,
       models: [Address, Image, Order, Pricelist, Product, User],
