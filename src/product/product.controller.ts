@@ -12,6 +12,7 @@ import {
   HttpStatus,
   UploadedFiles,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -45,8 +46,11 @@ export class ProductController {
   }
 
   @Get()
-  async findAll(@Res({ passthrough: true }) res: Response) {
-    const payload = await this.productService.findAll();
+  async findAll(
+    @Query('search') search: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const payload = await this.productService.findAll(search);
     return res.status(HttpStatus.OK).json({
       isSuccessful: true,
       payload,
