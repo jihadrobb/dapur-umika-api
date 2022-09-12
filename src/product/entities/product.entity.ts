@@ -25,6 +25,9 @@ class Product extends Model {
   @Column
   portion: string;
 
+  @Column
+  stock: number;
+
   @Column({ defaultValue: true })
   isActive: boolean;
 

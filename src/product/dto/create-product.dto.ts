@@ -18,4 +18,7 @@ export class CreateProductDto {
 
   @IsOptional()
   portion?: string;
+
+  @IsNumberString()
+  stock: number;
 }

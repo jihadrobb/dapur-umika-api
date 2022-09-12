@@ -10,6 +10,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
 import { v4 as uuidv4 } from 'uuid';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class ProductService {
@@ -44,9 +45,9 @@ export class ProductService {
     });
   }
 
-  async findAll() {
+  async findAll(search: string) {
     return this.productModel.findAll({
-      where: { isActive: true },
+      where: { isActive: true, name: { [Op.iLike]: `%${search}%` } },
       include: {
         model: Image,
         attributes: ['id', 'imgUrl'],
@@ -73,7 +74,10 @@ export class ProductService {
     product = await this.productModel.findByPk(id);
     if (!product) throw new NotFoundException('Product not found');
 
-    await this.productModel.update(body, { where: { id } });
+    await this.productModel.update(
+      { ...body, isActive: body.stock > 0 },
+      { where: { id } },
+    );
     return this.productModel.findByPk(id, {
       include: {
         model: Image,
