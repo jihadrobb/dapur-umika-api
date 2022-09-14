@@ -21,4 +21,8 @@ export class CreateProductDto {
 
   @IsNumberString()
   stock: number;
+
+  @IsOptional()
+  @IsNumberString()
+  promoPrice: number; // in rupiah
 }

@@ -20,6 +20,9 @@ class Product extends Model {
   price: number; // in rupiah
 
   @Column
+  promoPrice: number; // in rupiah
+
+  @Column
   weight: number; // in gram
 
   @Column
